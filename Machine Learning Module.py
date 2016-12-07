@@ -12,6 +12,7 @@ import numpy as np
 import sklearn
 from sklearn.linear_model import LinearRegression
 from sklearn.cross_validation import train_test_split
+from sklearn import preprocessing
 #-------------------Classfier---------------------
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
@@ -71,7 +72,9 @@ class Machine_Learning(object):
         features_list = []
         for i in range(len(features_df)):
             features_list.append(features_df.ix[i].tolist())
-        
+            
+        features_list = preprocessing.scale(features_list)
+            
         predict_list = df[Predict_label].tolist()
     
         if len(features_list) == len(predict_list):
@@ -149,7 +152,7 @@ del Training['Adj Close']
 
 
 
-ML = Machine_Learning(Training,'label','SVM',0.7,data_type = 'Time_Series')
+ML = Machine_Learning(Training,'label','SVM',0.6,data_type = 'Time_Series')
 
 print Prediction_Model.predict(outsample_data[0][2:5])
 
