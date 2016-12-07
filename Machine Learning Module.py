@@ -61,8 +61,8 @@ class Machine_Learning(object):
         self.df = df.dropna()
         self.Model = Model
         self.Data =  self.Prepare_Data(self.df,train_test_ratio,Predict_label,data_type)
-        global Predict_model        
-        Predict_model = self.Models(self.Data)
+        #global Predict_model        
+        self.Models(self.Data)
 
 
     def Prepare_Data(self,df,train_test_ratio,Predict_label,data_type = 'Time_Series'):
@@ -101,7 +101,16 @@ class Machine_Learning(object):
 
         model.fit(data[0],data[1])
         print model.score(data[2],data[3])
-        return model
+        
+        global outsample_data        
+        outsample_data = data[2],data[3]
+        
+        
+        #Output predict model to global
+        global Prediction_Model
+        Prediction_Model = model
+        
+        
 
 
 
@@ -114,8 +123,8 @@ class Machine_Learning(object):
 data = web.DataReader('^TWII','yahoo','2000-01-01')
 data['past_return'] = data['Adj Close'].pct_change().shift(1)
 data['Average_Return'] = pd.rolling_mean(data['Adj Close'].pct_change(),5)
-data['Deviation'] = pd.rolling_mean(data['Adj Close'],20)/data['Adj Close'] - 1.
-data['Volatility'] = pd.rolling_std(data['Adj Close'].pct_change(),20)
+data['Deviation'] = pd.rolling_mean(data['Adj Close'],5)/data['Adj Close'] - 1.
+data['Volatility'] = pd.rolling_std(data['Adj Close'].pct_change(),5)
 
 data = data.dropna()
 
@@ -129,7 +138,7 @@ Training['Volatility'] = data['Volatility']
 
 Training = Training.resample('W-WED',how = 'last')
 Training['label'] = np.nan
-Training['label'] = np.where(Training['Adj Close'].pct_change().shift(-1) < -0.0,1,0)
+Training['label'] = np.where(Training['Adj Close'].pct_change().shift(-1) < -0.01,1,0)
 #Training['label'] = np.where(Training['Adj Close'].pct_change().shift(-1) < -0.01,-1,Training['label'])
 #Training['label'].fillna(0)
 del Training['Adj Close']
@@ -138,44 +147,10 @@ del Training['Adj Close']
 
 
 
-'''
-data['return'] = data['Adj Close'].pct_change(2)
-data['past_return'] = data['Adj Close'].pct_change().shift(1)
-data['label'] = np.where(data['return'] > 0.,1,0)
-data['Average_Return'] = pd.rolling_mean(data['Adj Close'].pct_change(),5)
-data['MA'] = pd.rolling_mean(data['Adj Close'],20)/data['Adj Close'] - 1.
-'''
 
 
-'''
-Training = pd.DataFrame()
-Training['past_return'] = data['past_return']
-Training['Average_Return'] = data['Average_Return']
-Training['label'] = data['label']
-Training['Deviation'] = data['MA']
-Training['Volatility'] = pd.rolling_std(data['return'],20)
-#temp = Prepare_Data(df = data,train_test_ratio=0.7,Predict_label = 'Adj Close',data_type = 'Time_Series')
-'''
+ML = Machine_Learning(Training,'label','SVM',0.7,data_type = 'Time_Series')
+
+print Prediction_Model.predict(outsample_data[0][2:5])
 
 
-ML = Machine_Learning(Training,'label','SVM',0.6,data_type = 'Time_Series')
-
-
-
-
-
-del Training['label']
-Training = Training[Training.index > '2013-01-01'].dropna()
-Training['Signal'] = np.nan
-
-for i in range(len(Training)):
-    Training['Signal'][i] = Predict_model.predict(np.array(Training[['past_return','Average_Return','Deviation','Volatility']].ix[i]))
-
-
-
-compare = pd.DataFrame()
-compare['Adj Close'] = data['Adj Close']
-
-compare['Signal'] = Training['Signal']
-compare = compare.dropna()
-print compare[compare.Signal == 1]
