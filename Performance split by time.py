@@ -74,9 +74,16 @@ def Performance_Comparision(df,Period):
     Equity_Curve(df)
     
     
-    
-    
-Data = Portfolio(Tickers = ['SPY','EEM','VNQ','SHY'],start = '2000-01-01')
+Total_Tickers = ['SPY','IWM','VGK','EWJ','EEM','SHY','IEF' ,'TLT' ,'TIP' ,'AGG' ,'HYG' ,'EMB' ,'VNQ' ,'RWX' ,'PFF' ,'GLD' ,'USO' ,'DBA' ]
+Equity_Tickers = ['SPY','IWM','VGK','EWJ','EEM']
+Fixed_Income_Tickers = ['SHY','IEF' ,'TLT' ,'TIP' ,'AGG' ,'HYG' ,'EMB']
+Preferred_Tickers = ['PFF']
+Real_Estate_Tickers = ['VNQ' ,'RWX']
+Commodity_Tickers = ['GLD' ,'USO' ,'DBA']
+
+
+
+Data = Portfolio(Tickers = Commodity_Tickers,start = '2000-01-01')
   
 Performance_Comparision(Data, 'M')
 
