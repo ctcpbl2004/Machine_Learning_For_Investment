@@ -8,10 +8,10 @@ Created on Mon Jan 02 16:45:43 2017
 import pandas as pd
 import pandas_datareader.data as web
 import numpy as np
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.cross_validation import train_test_split
 import matplotlib.pyplot as plt
-
+import subprocess
 import matplotlib
 
 matplotlib.style.use('ggplot')
@@ -50,9 +50,11 @@ Tickers = ['SPY','IWM','VGK','EWJ','EEM','SHY','IEF' ,'TLT' ,'TIP' ,'AGG' ,'HYG'
 
 
 Shift_para = 20
-Ticker = 'GLD'
+Frequency = 'MS'
+Ticker = 'USO'
 
 Stock_raw = web.DataReader(Ticker,'yahoo','1980-01-01')
+
 Stock = Stock_raw.drop(['Open','High','Low','Close','Volume'],axis = 1)
 
 Stock['Return'] = Stock['Adj Close'].pct_change()
@@ -61,12 +63,18 @@ Stock['Volatility']  = pd.rolling_std(Stock['Return'],Shift_para)
 Stock['Momentum'] = pd.rolling_sum(Stock['Return'],Shift_para)
 Stock['Forward'] = np.where(Stock['Adj Close'].shift(-Shift_para) > Stock['Adj Close'],1,0)
 
-Stock = Stock.resample('MS', how = 'first').dropna()
+#Prepare features
+Stock = Stock.resample(Frequency, how = 'first').dropna()
+
+del Stock['Adj Close']
+del Stock['Return']
+#del Stock['Range']
 
 Train_Predict = Prepare_Data(df = Stock,train_test_ratio = 0.7,Predict_label = 'Forward',data_type = 'Time_Series')
 clf_tree = DecisionTreeClassifier()
 clf_tree.fit(Train_Predict[0],Train_Predict[1])
 #print Ticker, clf_tree.score(Train_Predict[2],Train_Predict[3])
+
 print Ticker + "'s predict accuracy = %0.4f" % clf_tree.score(Train_Predict[2],Train_Predict[3])
 
 '''
@@ -93,12 +101,6 @@ Signal_df['Buy & Hold'] = (Signal_df['Return'] +1.).cumprod()
 Signal_df['Decision_Tree_Strategy'] = Signal_df['Strategic_Return'].cumprod()
 #print Signal_df[['Decision_Tree_Strategy','Buy & Hold']]
 Signal_df[['Decision_Tree_Strategy','Buy & Hold']].plot()
-
-
-
-
-
-
 
 
 
